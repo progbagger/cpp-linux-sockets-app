@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include <exception>
+#include <optional>
 #include <stdexcept>
 
 using AddressFamilyType = int;
@@ -29,9 +30,11 @@ class Socket {
   Socket& operator=(const Socket&) = delete;
   Socket& operator=(Socket&&) noexcept = delete;
 
-  explicit Socket(AddressFamilyType address_family = AF_UNSPEC,
-                  SocketType socket_type = SOCK_STREAM,
-                  ProtocolType protocol = 0, bool is_unblocking = false);
+  explicit Socket(
+      std::optional<FileDescriptorType> file_descriptor = std::nullopt,
+      AddressFamilyType address_family = AF_UNSPEC,
+      SocketType socket_type = SOCK_STREAM, ProtocolType protocol = 0,
+      bool is_unblocking = false);
 
   Socket(Socket&&) noexcept;
 

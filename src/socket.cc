@@ -9,14 +9,18 @@
 SocketError::SocketError(const std::string& message)
     : std::logic_error(message) {}
 
-Socket::Socket(AddressFamilyType address_family, SocketType socket_type,
+Socket::Socket(std::optional<FileDescriptorType> file_descriptor,
+               AddressFamilyType address_family, SocketType socket_type,
                ProtocolType protocol, bool is_unblocking)
     : address_family_(address_family),
       socket_type_(socket_type),
       protocol_(protocol),
       file_descriptor_(),
       is_unblocking_(is_unblocking) {
-  file_descriptor_ = socket(address_family, socket_type, 0);
+  if (!file_descriptor.has_value()) {
+    file_descriptor_ = socket(address_family, socket_type, 0);
+  }
+
   if (file_descriptor_ < 0) {
     throw SocketError("can't create socket");
   }
@@ -94,7 +98,8 @@ Socket Socket::Accept() {
     throw SocketError("can't accept on this socket");
   }
 
-  return Socket(address_info.sin_family, GetSocketType(), GetProtocol(), false);
+  return Socket(new_file_descriptor, address_info.sin_family, GetSocketType(),
+                GetProtocol(), false);
 }
 
 std::string Socket::Receive() {
