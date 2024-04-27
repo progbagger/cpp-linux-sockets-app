@@ -36,13 +36,6 @@ Socket::Socket(Socket&& other) noexcept
 
 Socket::~Socket() { Close(); }
 
-void Socket::Close() noexcept {
-  if (file_descriptor_ > 0) {
-    close(file_descriptor_);
-    file_descriptor_ = -1;
-  }
-}
-
 AddressFamilyType Socket::GetAddressFamily() const noexcept {
   return address_family_;
 }
@@ -120,4 +113,24 @@ std::string Socket::Receive() {
   }
 
   return result;
+}
+
+void Socket::Send(const std::string& message) {
+  int total_sended = 0;
+
+  while (total_sended != message.size()) {
+    int n = send(GetFileDescriptor(), message.c_str() + total_sended,
+                 message.size() - total_sended, 0);
+    if (n < 0) {
+      throw SocketError("error while writing to socket");
+    }
+
+    total_sended += n;
+  }
+}
+
+void Socket::Close() noexcept {
+  if (file_descriptor_ > 0) {
+    close(file_descriptor_);
+  }
 }

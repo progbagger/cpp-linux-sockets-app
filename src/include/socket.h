@@ -40,8 +40,6 @@ class Socket {
 
   virtual ~Socket();
 
-  void Close() noexcept;
-
   AddressFamilyType GetAddressFamily() const noexcept;
   SocketType GetSocketType() const noexcept;
   ProtocolType GetProtocol() const noexcept;
@@ -55,8 +53,11 @@ class Socket {
   Socket Accept();
 
   std::string Receive();
+  void Send(const std::string& message);
 
  private:
+  void Close() noexcept;
+
   AddressFamilyType address_family_;
   SocketType socket_type_;
   ProtocolType protocol_;
