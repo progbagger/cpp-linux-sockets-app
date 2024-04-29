@@ -13,6 +13,11 @@
 int main(int argc, char** argv) {
   signal(SIGINT | SIGTERM, [](int) { throw Interrupted(); });
 
+  if (argc < 3) {
+    std::cerr << "There must be two parameters: address and port" << std::endl;
+    return 1;
+  }
+
   Processor processor;
   const size_t kMaxRetries = 3;
   size_t retries = 0;

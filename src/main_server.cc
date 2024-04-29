@@ -100,6 +100,11 @@ class CustomServer final : public net::Server {
 int main(int argc, char** argv) {
   signal(SIGINT, [](int) { throw Interrupted(); });
 
+  if (argc < 2) {
+    std::cerr << "There must be only one parameter - port" << std::endl;
+    return 1;
+  }
+
   try {
     CustomServer server;
     server.Serve(net::Address("any", std::stoi(argv[1])),
