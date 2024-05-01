@@ -12,7 +12,7 @@ The server is capable of connecting multiple clients and processing their reques
 
 1. `connections` - return current number of connections to the server
 2. `count <message>` - count letters in the message and return it in the table form
-3. `send <id> <message>` - send a message to the client with ID `id` (unfortunately, it is impossible to determine the IDs of clients yet)
+3. `send <message>` - send a message to all other connected clients
 
 If you want to wtite down your own server - you can specialize `server.h` server by providing `ResponseProcessor` caller to the `Serve` method.
 
