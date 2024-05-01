@@ -18,7 +18,8 @@ struct CustomResponseProcessor {
   std::vector<std::shared_ptr<net::Socket>>& connections;
   Processor processor;
 
-  std::string operator()(const std::string& message) const {
+  std::string operator()(std::shared_ptr<net::Socket> connection,
+                         const std::string& message) const {
     auto deserialized = processor.Deserialize(message);
 
     if (deserialized.first == "connections") {
@@ -63,21 +64,11 @@ struct CustomResponseProcessor {
     }
 
     if (deserialized.first == "send") {
-      size_t client_id;
-      try {
-        client_id = std::stoull(deserialized.second);
-      } catch (const std::exception& e) {
-        return processor.Serialize("error", "can't convert id to number");
+      for (const auto& conn : connections) {
+        if (connection->GetFileDescriptor() != conn->GetFileDescriptor()) {
+          conn->Send(message);
+        }
       }
-
-      if (client_id > connections.size() - 1) {
-        return processor.Serialize("error", "this id is not connected");
-      }
-
-      auto pos = deserialized.second.find_first_of(" \t");
-      pos = deserialized.second.find_first_not_of(" \t", pos);
-
-      return processor.Serialize("send", deserialized.second.substr(pos));
     }
 
     return "";
@@ -106,8 +97,12 @@ int main(int argc, char** argv) {
 
   try {
     CustomServer server;
-    server.Serve(net::Address("any", std::stoi(argv[1])),
-                 [](const std::string& message) { return message; });
+
+    // processor parameter will be ignored
+    server.Serve(
+        net::Address("any", std::stoi(argv[1])),
+        [](std::shared_ptr<net::Socket>, const std::string&) { return ""; },
+        60'000 * 60);
   } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return 1;

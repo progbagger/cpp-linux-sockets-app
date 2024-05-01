@@ -125,7 +125,7 @@ void Server::ProcessConnection(std::shared_ptr<Socket> connection,
     return;
   }
 
-  std::string processed = response_processor(response.data);
+  std::string processed = response_processor(connection, response.data);
   if (!processed.empty()) {
     connection->Send(processed);
   }

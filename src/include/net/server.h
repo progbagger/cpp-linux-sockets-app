@@ -21,7 +21,8 @@ class ServerError : public std::runtime_error {
 
 class Server {
  public:
-  using ResponseProcessor = std::function<std::string(const std::string&)>;
+  using ResponseProcessor =
+      std::function<std::string(std::shared_ptr<Socket>, const std::string&)>;
 
   explicit Server(AddressFamilyType listener_address_family = AF_INET,
                   SocketType listener_socket_type = SOCK_STREAM,
