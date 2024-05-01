@@ -89,10 +89,9 @@ class CustomServer final : public net::Server {
   CustomServer() : net::Server() {}
 
  protected:
-  virtual void ProcessConnection(
-      std::shared_ptr<net::Socket> connection,
-      const ResponseProcessor& response_processor) override {
-    CustomResponseProcessor processor{connections_};
+  virtual void ProcessConnection(std::shared_ptr<net::Socket> connection,
+                                 const ResponseProcessor&) override {
+    CustomResponseProcessor processor{connections_, Processor()};
     return net::Server::ProcessConnection(connection, processor);
   }
 };

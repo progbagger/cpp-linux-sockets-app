@@ -59,6 +59,7 @@ class Socket {
 
   void MakeUnblocking();
   void SetLinger(int timeout_sec = kDefaultTimeoutMsec);
+  void SetReusable();
 
   void Bind(const Address& address);
   void Connect(const Address& address);

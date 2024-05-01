@@ -40,8 +40,13 @@ Socket::Socket(std::optional<FileDescriptorType> file_descriptor,
   try {
     SetLinger();
   } catch (const SocketError&) {
-    Close();
-    throw;
+    // ignore
+  }
+
+  try {
+    SetReusable();
+  } catch (const SocketError&) {
+    // ignore
   }
 }
 
@@ -84,11 +89,20 @@ void Socket::MakeUnblocking() {
 void Socket::SetLinger(int timeout_sec) {
   struct linger linger;
   linger.l_onoff = true;
-  linger.l_linger = 30;
+  linger.l_linger = timeout_sec / (timeout_sec > 0 ? 1'000 : 1);
   int status = setsockopt(file_descriptor_, SOL_SOCKET, SO_LINGER, &linger,
                           sizeof(linger));
   if (status < 0) {
     throw SocketError("can't linger socket");
+  }
+}
+
+void Socket::SetReusable() {
+  int enable = 1;
+  int status = setsockopt(GetFileDescriptor(), SOL_SOCKET, SO_REUSEADDR,
+                          &enable, sizeof(enable));
+  if (status < 0) {
+    throw SocketError("can't set reusable address option");
   }
 }
 
@@ -188,7 +202,7 @@ Status Socket::Send(const std::string& message, int timeout_msec) {
   fds[0].fd = GetFileDescriptor();
   fds[0].events = POLLOUT;
 
-  int total_sended = 0;
+  size_t total_sended = 0;
   while (total_sended != message_with_header.size()) {
     int status = poll(fds, 1, timeout_msec);
     if (status < 0) {
